@@ -34,29 +34,31 @@ def calc_signals(dataset):
     dataset['signal'] = dataset['signal'].shift(1)
     print(dataset)
 
-
+#Initialize functions
 dataset = fetch_market('BTC/USDT', '1d', 90)
 calc_signals(dataset)
 
+#Backtest mock variables
+initial_capital = 100
+port_size = 1
+current_position = None
 
+trades = []
 
-## Swing Trading, buy = fast MA crosses above slow MA, sell = fast MA crosses above slow MA
+for index, row in dataset.iterrows():
+    if row['signal'] == 1 and current_position is None:
+        entry_price = row['close']
+        trade_capital = initial_capital * port_size
+        trade_quantity = trade_capital/entry_price
+        current_position = 'buy'
+        trades.append(('buy', row['timestamp'], entry_price, trade_quantity))
+        print(f"Bought at {entry_price} on {index}")
+    elif row['signal'] == -1 and current_position == 'buy':
+        exit_price = row['close']
+        trade_capital = trade_quantity * exit_price
+        initial_capital += trade_capital - (initial_capital * port_size)
+        current_position = None
+        trades.append(('sell', row['timestamp'], exit_price, trade_quantity))
+        print(f"Sold at {exit_price} on {index}")
 
-
-
-# Fetches balance
-
-# balance = exchange.fetch_balance()
-
-# for currency, amount in balance['total'].items():
-#     if amount >= 0:
-#         print(f"{currency}: {amount}")
-
-
-# Getting coin we want to trade
-
-# symbol = 'BTC/USDT'
-
-# ticker = exchange.fetch_ticker(symbol)
-
-# print(ticker)
+trades_df = pd.DataFrame(trades, columns=['Action', 'Date', 'Price', 'Quantity'])
