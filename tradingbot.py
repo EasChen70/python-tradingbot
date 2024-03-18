@@ -23,28 +23,13 @@ def fetch_market(symbol, timeframe, limit):
     #Calculate simple moving averages
     dataset['sma10'] = dataset.close.rolling(10).mean() #fast MA
     dataset['sma40'] = dataset.close.rolling(40).mean() #slow MA
-    print(dataset)
+    return dataset
 
+# Make signals to buy/sell
+def calc_signals(dataset):
+    dataset['signal'] = 0
+    dataset.loc[dataset['sma10'] > dataset['sma40'], 'signal'] = 1 #buy signal
+    dataset.loc[dataset['sma10'] < dataset['sma40'], 'signal'] = -1 #sell signal
 
 fetch_market('BTC/USDT', '1d', 90)
 
-## Swing Trading, buy = fast MA crosses above slow MA, sell = fast MA crosses above slow MA
-
-
-
-# Fetches balance
-
-# balance = exchange.fetch_balance()
-
-# for currency, amount in balance['total'].items():
-#     if amount >= 0:
-#         print(f"{currency}: {amount}")
-
-
-# Getting coin we want to trade
-
-# symbol = 'BTC/USDT'
-
-# ticker = exchange.fetch_ticker(symbol)
-
-# print(ticker)
