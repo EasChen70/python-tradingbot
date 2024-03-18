@@ -32,7 +32,7 @@ def calc_signals(dataset):
     dataset.loc[dataset['sma10'] > dataset['sma40'], 'signal'] = 1 #buy signal
     dataset.loc[dataset['sma10'] < dataset['sma40'], 'signal'] = -1 #sell signal
     dataset['signal'] = dataset['signal'].shift(1)
-    print(dataset)
+    return dataset
 
 #Initialize functions
 dataset = fetch_market('BTC/USDT', '1d', 90)
@@ -52,13 +52,13 @@ for index, row in dataset.iterrows():
         trade_quantity = trade_capital/entry_price
         current_position = 'buy'
         trades.append(('buy', row['timestamp'], entry_price, trade_quantity))
-        print(f"Bought at {entry_price} on {index}")
+        print(f"Bought at {entry_price} on {row['timestamp'].date()}")
     elif row['signal'] == -1 and current_position == 'buy':
         exit_price = row['close']
         trade_capital = trade_quantity * exit_price
         initial_capital += trade_capital - (initial_capital * port_size)
         current_position = None
         trades.append(('sell', row['timestamp'], exit_price, trade_quantity))
-        print(f"Sold at {exit_price} on {index}")
+        print(f"Sold at {exit_price} on {row['timestamp'].date()}")
 
 trades_df = pd.DataFrame(trades, columns=['Action', 'Date', 'Price', 'Quantity'])
